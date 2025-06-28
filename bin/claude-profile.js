@@ -6,6 +6,7 @@ import { setRepo } from '../src/commands/repo.js';
 import { listProfiles } from '../src/commands/list.js';
 import { loadProfile } from '../src/commands/load.js';
 import { showConfig } from '../src/commands/config.js';
+import { applyProfile } from '../src/commands/apply.js';
 
 const program = new Command();
 
@@ -38,5 +39,10 @@ program
   .command('config')
   .description('Show current configuration')
   .action(showConfig);
+
+program
+  .command('apply [profile]')
+  .description('Apply a profile to claude.md (interactive if no profile specified)')
+  .action(applyProfile);
 
 program.parse();

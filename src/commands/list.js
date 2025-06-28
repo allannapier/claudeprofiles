@@ -22,6 +22,10 @@ export async function listProfiles() {
     if (profiles.length === 0) {
       console.log(chalk.yellow('\n📂 No profiles found in repository'));
       console.log(chalk.gray('Repository:'), config.repository);
+      console.log(chalk.gray('\nMake sure your repository has:'));
+      console.log(chalk.cyan('• A templates/ folder with .md files'));
+      console.log(chalk.cyan('• Or .md files in the root directory'));
+      console.log(chalk.cyan('• Files should be named like: customer-service.md'));
       return;
     }
     

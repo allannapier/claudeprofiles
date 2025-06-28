@@ -17,22 +17,6 @@ export async function generate() {
     process.exit(1);
   }
 
-  // Check if claude.md already exists
-  const claudePath = path.join(process.cwd(), 'claude.md');
-  if (await fileExists(claudePath)) {
-    const { overwrite } = await inquirer.prompt([{
-      type: 'confirm',
-      name: 'overwrite',
-      message: 'claude.md already exists. Overwrite?',
-      default: false
-    }]);
-    
-    if (!overwrite) {
-      console.log(chalk.yellow('Generation cancelled.'));
-      return;
-    }
-  }
-
   // Get agent type from user
   const { agentType } = await inquirer.prompt([{
     type: 'input',
@@ -47,6 +31,30 @@ export async function generate() {
     },
     filter: (input) => input.trim()
   }]);
+
+  // Create filename from agent type
+  const profileName = agentType.toLowerCase()
+    .replace(/\s+/g, '_')           // Replace spaces with underscores
+    .replace(/[^a-z0-9_-]/g, '')    // Remove special characters
+    .replace(/_+/g, '_')            // Replace multiple underscores with single
+    .replace(/^_|_$/g, '');         // Remove leading/trailing underscores
+  
+  const profilePath = path.join(process.cwd(), `${profileName}.md`);
+  
+  // Check if profile already exists
+  if (await fileExists(profilePath)) {
+    const { overwrite } = await inquirer.prompt([{
+      type: 'confirm',
+      name: 'overwrite',
+      message: `${profileName}.md already exists. Overwrite?`,
+      default: false
+    }]);
+    
+    if (!overwrite) {
+      console.log(chalk.yellow('Generation cancelled.'));
+      return;
+    }
+  }
 
   console.log(chalk.cyan('\n🤖 Generating rules with AI...\n'));
 
@@ -86,13 +94,13 @@ export async function generate() {
     const { save } = await inquirer.prompt([{
       type: 'confirm',
       name: 'save',
-      message: 'Save these rules to claude.md?',
+      message: `Save these rules to ${profileName}.md?`,
       default: true
     }]);
 
     if (save) {
-      await fs.writeFile(claudePath, finalRules);
-      console.log(chalk.green(`\n✅ Rules saved to ${claudePath}`));
+      await fs.writeFile(profilePath, finalRules);
+      console.log(chalk.green(`\n✅ Rules saved to ${profilePath}`));
       
       // Ask about Git
       const { commit } = await inquirer.prompt([{
@@ -103,7 +111,7 @@ export async function generate() {
       }]);
 
       if (commit) {
-        await commitToGit(claudePath);
+        await commitToGit(profilePath);
       }
     }
 

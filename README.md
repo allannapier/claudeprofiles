@@ -42,7 +42,17 @@ Follow the prompts to create a custom Claude profile for your project!
 ```bash
 claude-profile generate
 ```
-Creates a new `claude.md` file in the current directory using AI.
+Creates a new profile file (e.g., `frontend_developer.md`) based on the agent type using AI.
+
+### Apply a Profile
+```bash
+# Apply a specific profile to claude.md
+claude-profile apply frontend_developer
+
+# Interactive selection from available profiles
+claude-profile apply
+```
+Copies a profile to `claude.md` for use with Claude.
 
 ### Repository Management
 ```bash
@@ -112,10 +122,15 @@ The CLI will automatically find profiles in these formats:
 
 ## Examples
 
-### Generate a Customer Service Agent
+### Generate a Frontend Developer Profile
 ```bash
 claude-profile generate
-# Enter: "customer service representative"
+# Enter: "frontend developer"
+# Creates: frontend_developer.md
+
+# Apply it to your project
+claude-profile apply frontend_developer
+# Creates: claude.md
 ```
 
 ### Set Up a Team Repository
