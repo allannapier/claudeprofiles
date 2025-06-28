@@ -11,7 +11,7 @@ export async function applyProfile(profileName) {
     const profiles = await findLocalProfiles();
     
     if (profiles.length === 0) {
-      console.log(chalk.yellow('❌ No profiles found in current directory'));
+      console.log(chalk.yellow('❌ No profiles found in templates/ directory'));
       console.log(chalk.gray('Generate a profile first:'));
       console.log(chalk.cyan('  claude-profile generate'));
       return;
@@ -93,19 +93,52 @@ export async function applyProfile(profileName) {
 }
 
 async function findLocalProfiles() {
-  const glob = new Glob('*.md', { cwd: process.cwd() });
-  const files = await glob.walk();
+  const profiles = [];
   
-  return files
-    .filter(file => file !== 'claude.md' && file !== 'README.md' && file !== 'readme.md')
-    .map(file => ({
-      name: path.basename(file, '.md'),
-      path: file
-    }));
+  // Check templates folder first
+  const templatesDir = path.join(process.cwd(), 'templates');
+  try {
+    const templatesGlob = new Glob('*.md', { cwd: templatesDir });
+    const templateFiles = await templatesGlob.walk();
+    
+    templateFiles.forEach(file => {
+      if (file !== 'README.md' && file !== 'readme.md') {
+        profiles.push({
+          name: path.basename(file, '.md'),
+          path: `templates/${file}`
+        });
+      }
+    });
+  } catch (error) {
+    // Templates folder doesn't exist
+  }
+  
+  // Fallback to root directory if no templates found
+  if (profiles.length === 0) {
+    const glob = new Glob('*.md', { cwd: process.cwd() });
+    const files = await glob.walk();
+    
+    files
+      .filter(file => file !== 'claude.md' && file !== 'README.md' && file !== 'readme.md')
+      .forEach(file => {
+        profiles.push({
+          name: path.basename(file, '.md'),
+          path: file
+        });
+      });
+  }
+  
+  return profiles;
 }
 
 async function findProfileFile(profileName) {
   const possiblePaths = [
+    // Templates folder first
+    `templates/${profileName}.md`,
+    `templates/${profileName.toLowerCase()}.md`,
+    `templates/${profileName.replace(/\s+/g, '_')}.md`,
+    `templates/${profileName.replace(/\s+/g, '-')}.md`,
+    // Fallback to root
     `${profileName}.md`,
     `${profileName.toLowerCase()}.md`,
     `${profileName.replace(/\s+/g, '_')}.md`,

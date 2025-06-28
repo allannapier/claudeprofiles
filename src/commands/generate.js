@@ -39,7 +39,15 @@ export async function generate() {
     .replace(/_+/g, '_')            // Replace multiple underscores with single
     .replace(/^_|_$/g, '');         // Remove leading/trailing underscores
   
-  const profilePath = path.join(process.cwd(), `${profileName}.md`);
+  // Ensure templates directory exists
+  const templatesDir = path.join(process.cwd(), 'templates');
+  try {
+    await fs.mkdir(templatesDir, { recursive: true });
+  } catch (error) {
+    // Directory already exists
+  }
+  
+  const profilePath = path.join(templatesDir, `${profileName}.md`);
   
   // Check if profile already exists
   if (await fileExists(profilePath)) {
@@ -94,7 +102,7 @@ export async function generate() {
     const { save } = await inquirer.prompt([{
       type: 'confirm',
       name: 'save',
-      message: `Save these rules to ${profileName}.md?`,
+      message: `Save these rules to templates/${profileName}.md?`,
       default: true
     }]);
 

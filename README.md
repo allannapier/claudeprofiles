@@ -42,7 +42,7 @@ Follow the prompts to create a custom Claude profile for your project!
 ```bash
 claude-profile generate
 ```
-Creates a new profile file (e.g., `frontend_developer.md`) based on the agent type using AI.
+Creates a new profile file (e.g., `templates/frontend_developer.md`) based on the agent type using AI.
 
 ### Apply a Profile
 ```bash
@@ -126,7 +126,7 @@ The CLI will automatically find profiles in these formats:
 ```bash
 claude-profile generate
 # Enter: "frontend developer"
-# Creates: frontend_developer.md
+# Creates: templates/frontend_developer.md
 
 # Apply it to your project
 claude-profile apply frontend_developer
