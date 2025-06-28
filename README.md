@@ -86,23 +86,25 @@ Settings are stored in `~/.claude-profile/config.json`:
 
 ## Profile Repository Structure
 
-For shared profiles, organize your GitHub repository like:
+For shared profiles, organize your GitHub repository with a `templates` folder:
 
 ```
 profiles-repo/
-├── customer-service.md
-├── code-reviewer.md
-├── data-analyst/
-│   └── claude.md
-└── writing-assistant/
-    └── claude.md
+├── README.md
+└── templates/
+    ├── customer-service.md
+    ├── code-reviewer.md
+    ├── data-analyst/
+    │   └── claude.md
+    └── writing-assistant/
+        └── claude.md
 ```
 
 The CLI will automatically find profiles in these formats:
-- `{name}.md`
-- `{name}/claude.md`
-- `profiles/{name}.md`
-- `profiles/{name}/claude.md`
+- `templates/{name}.md`
+- `templates/{name}/claude.md`
+- `{name}.md` (fallback for backward compatibility)
+- `{name}/claude.md` (fallback for backward compatibility)
 
 ## Environment Variables
 
