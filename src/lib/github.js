@@ -1,5 +1,19 @@
 import fetch from 'node-fetch';
 
+// Network timeout configuration
+const NETWORK_TIMEOUT = 30000; // 30 seconds
+
+// Helper function to create fetch with timeout
+function fetchWithTimeout(url, options = {}) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), NETWORK_TIMEOUT);
+  
+  return fetch(url, {
+    ...options,
+    signal: controller.signal
+  }).finally(() => clearTimeout(timeout));
+}
+
 export async function fetchFromGitHub(repoUrl, profileName) {
   // Extract owner and repo from URL
   const match = repoUrl.match(/github\.com\/([^\/]+)\/([^\/]+)/);
@@ -23,7 +37,7 @@ export async function fetchFromGitHub(repoUrl, profileName) {
   for (const filePath of possiblePaths) {
     try {
       const url = `https://raw.githubusercontent.com/${owner}/${repo}/main/${filePath}`;
-      const response = await fetch(url);
+      const response = await fetchWithTimeout(url);
       
       if (response.ok) {
         const content = await response.text();
@@ -50,7 +64,7 @@ export async function listGitHubProfiles(repoUrl) {
   try {
     // Get templates folder contents first
     const templatesUrl = `https://api.github.com/repos/${owner}/${repo}/contents/templates`;
-    const templatesResponse = await fetch(templatesUrl);
+    const templatesResponse = await fetchWithTimeout(templatesUrl);
     const profiles = [];
     
     if (templatesResponse.ok) {
@@ -71,7 +85,7 @@ export async function listGitHubProfiles(repoUrl) {
           // Check if directory contains claude.md
           try {
             const dirUrl = `https://api.github.com/repos/${owner}/${repo}/contents/templates/${item.name}`;
-            const dirResponse = await fetch(dirUrl);
+            const dirResponse = await fetchWithTimeout(dirUrl);
             if (dirResponse.ok) {
               const dirContents = await dirResponse.json();
               const hasClaudeMd = dirContents.some(file => 
@@ -95,7 +109,7 @@ export async function listGitHubProfiles(repoUrl) {
     // If no templates folder or no profiles found, fallback to root
     if (profiles.length === 0) {
       const rootUrl = `https://api.github.com/repos/${owner}/${repo}/contents`;
-      const rootResponse = await fetch(rootUrl);
+      const rootResponse = await fetchWithTimeout(rootUrl);
       
       if (!rootResponse.ok) {
         if (rootResponse.status === 404) {
@@ -121,7 +135,7 @@ export async function listGitHubProfiles(repoUrl) {
           // Check if directory contains claude.md
           try {
             const dirUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${item.name}`;
-            const dirResponse = await fetch(dirUrl);
+            const dirResponse = await fetchWithTimeout(dirUrl);
             if (dirResponse.ok) {
               const dirContents = await dirResponse.json();
               const hasClaudeMd = dirContents.some(file => 

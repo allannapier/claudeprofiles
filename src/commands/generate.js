@@ -44,7 +44,9 @@ export async function generate() {
   try {
     await fs.mkdir(templatesDir, { recursive: true });
   } catch (error) {
-    // Directory already exists
+    if (error.code !== 'EEXIST') {
+      console.error(`Warning: Failed to create templates directory: ${error.message}`);
+    }
   }
   
   const profilePath = path.join(templatesDir, `${profileName}.md`);

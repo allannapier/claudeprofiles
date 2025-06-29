@@ -2,10 +2,29 @@ import chalk from 'chalk';
 import ora from 'ora';
 import fs from 'fs/promises';
 import path from 'path';
+import crypto from 'crypto';
 import inquirer from 'inquirer';
 import { getConfig } from '../lib/config.js';
 import { fetchFromGitHub } from '../lib/github.js';
 import { fileExists, commitToGit } from '../utils/helpers.js';
+
+// Helper function for atomic file writes
+async function writeFileAtomic(filePath, content) {
+  const tempPath = `${filePath}.tmp.${crypto.randomBytes(8).toString('hex')}`;
+  
+  try {
+    await fs.writeFile(tempPath, content);
+    await fs.rename(tempPath, filePath);
+  } catch (error) {
+    // Clean up temp file if it exists
+    try {
+      await fs.unlink(tempPath);
+    } catch (cleanupError) {
+      // Ignore cleanup errors
+    }
+    throw error;
+  }
+}
 
 export async function loadProfile(profileName) {
   const config = await getConfig();
@@ -37,7 +56,7 @@ export async function loadProfile(profileName) {
   try {
     const content = await fetchFromGitHub(config.repository, profileName);
     
-    await fs.writeFile(claudePath, content);
+    await writeFileAtomic(claudePath, content);
     spinner.succeed(`Profile loaded: ${profileName}`);
     
     console.log(chalk.green(`✅ Profile "${profileName}" saved to claude.md`));

@@ -1,6 +1,19 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { PROMPTS } from './prompts.js';
 
+// API timeout configuration
+const API_TIMEOUT = 30000; // 30 seconds
+
+// Helper function to add timeout to API calls
+function withTimeout(promise, timeoutMs = API_TIMEOUT) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('API request timed out')), timeoutMs)
+    )
+  ]);
+}
+
 let genAI = null;
 let model = null;
 
@@ -30,7 +43,7 @@ export async function generateInitialRules(agentType) {
   const prompt = PROMPTS.initial.replace('{agentType}', agentType);
   
   try {
-    const result = await modelInstance.generateContent(prompt);
+    const result = await withTimeout(modelInstance.generateContent(prompt));
     const response = await result.response;
     return response.text();
   } catch (error) {
@@ -43,7 +56,7 @@ export async function evaluateRules(rules) {
   const prompt = PROMPTS.evaluate.replace('{rules}', rules);
   
   try {
-    const result = await modelInstance.generateContent(prompt);
+    const result = await withTimeout(modelInstance.generateContent(prompt));
     const response = await result.response;
     return response.text();
   } catch (error) {
@@ -58,7 +71,7 @@ export async function enhanceRules(rules, evaluation) {
     .replace('{evaluation}', evaluation);
   
   try {
-    const result = await modelInstance.generateContent(prompt);
+    const result = await withTimeout(modelInstance.generateContent(prompt));
     const response = await result.response;
     return response.text();
   } catch (error) {
@@ -71,7 +84,7 @@ export async function finalizeRules(rules) {
   const prompt = PROMPTS.finalize.replace('{rules}', rules);
   
   try {
-    const result = await modelInstance.generateContent(prompt);
+    const result = await withTimeout(modelInstance.generateContent(prompt));
     const response = await result.response;
     return response.text();
   } catch (error) {

@@ -14,7 +14,9 @@ async function ensureConfigDir() {
   try {
     await fs.mkdir(CONFIG_DIR, { recursive: true });
   } catch (error) {
-    // Directory already exists or other error
+    if (error.code !== 'EEXIST') {
+      console.error(`Warning: Failed to create config directory: ${error.message}`);
+    }
   }
 }
 
@@ -24,7 +26,10 @@ export async function getConfig() {
     const configData = await fs.readFile(CONFIG_FILE, 'utf8');
     return { ...DEFAULT_CONFIG, ...JSON.parse(configData) };
   } catch (error) {
-    // Config file doesn't exist, return defaults
+    if (error.code !== 'ENOENT') {
+      console.error(`Warning: Failed to read config file: ${error.message}`);
+    }
+    // Config file doesn't exist or is unreadable, return defaults
     return DEFAULT_CONFIG;
   }
 }
@@ -50,6 +55,9 @@ export async function clearConfig() {
   try {
     await fs.unlink(CONFIG_FILE);
   } catch (error) {
+    if (error.code !== 'ENOENT') {
+      console.error(`Warning: Failed to clear config file: ${error.message}`);
+    }
     // File doesn't exist, nothing to clear
   }
 }
